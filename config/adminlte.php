@@ -293,6 +293,7 @@ return [
        
         [
             'text' => 'Lista de usuarios',
+            'route' => 'producto.index',
             'url' => '#',
             'icon' => 'fas fa-users', // icono de fontawesome
             'can' => 'lista_usuarios' // permiso de admin
