@@ -20,6 +20,73 @@ class ProductoController extends Controller
         // Retornamos una vista y enviamos la variable "productos"
         return view('panel.vendedor.lista_productos.index', compact('productos'));
     }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+
+    public function create()
+    {
+        //Creamos un producto nuevo para cargarle datos
+        $producto = new Producto();
+
+        //Rcuperamos todas las categorias de la BD
+        $categorias = Categoria::all(); // Recordar importar el modelo Categoria!!
+
+        // Retornamos la vista de creacion de productos, enviamos el producto y las categorias
+        return view('panel.vendedor.lista_productos.create', compact('producto', 'categorias'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:20',
+            'descripcion' => 'nullable|string|max:255',
+            'precio' => 'required|gt:0',
+        ]);
+
+        $producto = new Producto();
+        $producto->nombre = $request->get('nombre');
+        $producto->descripcion = $request->get('descripcion');
+        $producto->precio = $request->get('precio');
+        $producto->categoria_id = $request->get('categoria_id');
+        $producto->vendedor_id = auth()->user()->id;
+
+        if ($request->hasFile('imagen')) {
+            // Subida de imagen al servidor (public > storage)
+            $image_url = $request->file('imagen')->store('public/producto');
+            $producto->imagen = asset(str_replace(
+                'public',
+                'storage',
+                $image_url
+            ));
+        } else {
+            $producto->imagen = '';
+        }
+
+        // Almacena la info del producto en la BD
+        $producto->save();
+        return redirect()
+        ->route('producto.index')
+        ->with(
+            'alert',
+            'Producto "' . $producto->nombre . '" agregado exitosamente.'
+        );
+
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Producto $producto)
+    {
+        return view('panel.vendedor.lista_productos.show', compact('producto'));
+
+    }
+    
     public function validar(Validacion $request)
     {
         // Verificar si la validación ha pasado
